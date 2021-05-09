@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { Table, Modal, Button as ButtonBootstrap, Form } from 'react-bootstrap';
 import { FiTrash2 } from 'react-icons/fi';
 import * as Yup from 'yup';
+import swal from 'sweetalert';
 
 import { Container, Button } from './styles';
 
@@ -20,10 +21,36 @@ const App = () => {
     setClientData({...newClientData});
   }, [clientData]);
 
-  const handleSave = useCallback(() => {
-    setClient([...clients, clientData]);
-    setClientData({});
-    setShow(false);
+  const handleSave = useCallback(async () => {
+    const schema = Yup.object().shape({
+      estado: Yup.string().required('Estado Obrigatório'),
+      cidade: Yup.string().required('Cidade Obrigatório'),
+      bairro: Yup.string().required('Bairro Obrigatório'),
+      numero: Yup.string().required('Número Obrigatório'),
+      logradouro: Yup.string().required('Logradouro Obrigatório'),
+      cep: Yup.string().required('CEP Obrigatório'),
+      telefone: Yup.string().required('Telefone Obrigatório'),
+      iden: Yup.string().required('CNPJ/CPF Obrigatório'),
+      email: Yup.string().email('Digite um Email válido').required('Email Obrigatório'),
+      nome: Yup.string().required('Nome Obrigatório'),
+    });
+
+    try {
+      await schema.validate(clientData, {abortEarly: false});
+      setClient([...clients, clientData]);
+      setClientData({});
+      setShow(false);
+    }catch(err){
+      err.inner.forEach((err) => {
+        swal({
+          title: "Erro!",
+          text: err.message,
+          icon: "error",
+          button: "OK",
+        });
+      });
+    }
+
   }, [clientData]);
 
   const handleDelete = useCallback((index) => {
